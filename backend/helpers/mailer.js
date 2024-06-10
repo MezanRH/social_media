@@ -35,7 +35,7 @@ exports.sendVerifiedEmail = (email, name, url)=>{
     from: EMAIL,
     to: email,
     subject: "Family Social App",
-    html: ``
+    html: `<div style=" padding: 20px; border: 1px solid #ddd; border-radius: 5px; text-align: center; "> <h1 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">Hello ${name} What's Up</h1> <p style="color: #333; font-size: 16px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">Hello ${name} hope you are doing well. please confirm your verification email to start journey with us</p> <a href=${url} style="border: 1px solid #666; padding: 8px 15px; border-radius: 5px; text-decoration: none; color: #333; margin-top: 20px; display: inline-block; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;" onmouseover="this.style.background = '#ddd'" onmouseleave="this.style.background = 'transparent'">Verify Email</a> </div>`
   }
   stmp.sendMail(mailOptions, (err, res) =>{
     if(err) return err;

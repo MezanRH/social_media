@@ -1,3 +1,4 @@
+const { sendVerifiedEmail } = require('../helpers/mailer');
 const { jwToken } = require('../helpers/token');
 const { validateEmail, validenam, validateUsernaem } = require('../helpers/validation')
 const Users = require('../models/usemodels')
@@ -74,9 +75,11 @@ exports.newUser = async (req, res)=>{
       verified
     }).save()
     
-    res.send(User)
-
     const emailToken = jwToken({id: User._id.toString()}, "30")
+    const url = `${process.env.BASE_URL}/activate/${emailToken}`
+    sendVerifiedEmail(User.email, User.fName, url)
+    
+    res.send(User)
 
     console.log(emailToken);
 
