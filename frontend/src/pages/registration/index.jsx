@@ -3,10 +3,12 @@ import LeftAuth from '../../components/authentication/LeftAuth'
 import { Registrations } from '../../svg/Registration'
 import RegistrationFrom from '../../components/authentication/RegistrationFrom'
 import { Helmet } from 'react-helmet-async'
+import { ToastContainer, toast } from 'react-toastify';
 
 function Registration() {
   return (
     <>
+    <ToastContainer/>
     <Helmet>
       <title>Registration</title>
     </Helmet>
@@ -17,7 +19,7 @@ function Registration() {
           <LeftAuth icon={<Registrations/>} title="Start Your Journey" description="Lorem, ipsum dolor sit amet consectetur adipisicing elit. Harum, totam, vel modi aut temporibus iusto ratione, eaque voluptatem reiciendis dolore rem doloremque suscipit eveniet. Fuga perspiciatis facere odio ipsum iste?"/>
         </div>
         <div className=' w-full lg:w-[35%] xl:w-[40%]'>
-          <RegistrationFrom/>
+          <RegistrationFrom toast={toast}/>
         </div>
       </div>
       </div>

@@ -1,35 +1,117 @@
-import React from 'react'
-import { Link } from "react-router-dom";
+import React, { useState } from 'react'
+import { Link, Navigate } from "react-router-dom";
 import { useFormik } from "formik";
 import { signUp } from '../../validation';
+import DateofBirth from './DateofBirth';
+import Gender from './Gender';
+import { useAddUserMutation } from '../../features/api/authApi';
 
 const initialState = {
   fName: "",
   lName: "",
   email: "",
   password: "",
-  bYear: "",
-  bMonth: "",
-  bDay: "",
+  bYear: new Date().getFullYear(),
+  bMonth: new Date().getMonth() + 1,
+  bDay: new Date().getDate(),
   gender: ""
 }
 
-const RegistrationFrom = () => {
+const RegistrationFrom = ({ toast }) => {
+
+  const [ageError, setAgeError] = useState("")
+  const [addUser,] = useAddUserMutation()
+
+  const registration = async ()=>{
+    const singUpMutation = await addUser({
+      fName: formik.values.fName,
+      lName: formik.values.lName,
+      email: formik.values.email,
+      password: formik.values.password,
+      bYear: formik.values.bYear,
+      bMonth: formik.values.bMonth,
+      bDay: formik.values.bDay,
+      gender: formik.values.gender,
+    })
+
+    if(singUpMutation?.data){
+      toast.success(singUpMutation.data?.message, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: true,
+        pauseOnHover: false,
+        theme: "light",
+        });
+        setTimeout(()=>{
+          Navigate("/login");
+        },2000)
+    }else if(singUpMutation?.error){
+      toast.error(singUpMutation.error?.data?.message, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: true,
+        pauseOnHover: false,
+        theme: "light",
+        });
+    }
+
+    // console.log(singUpMutation?.data);
+    // console.log(singUpMutation.error?.data?.message);
+    
+    
+  }
 
   const formik = useFormik({
     initialValues: initialState,
     validationSchema: signUp,
     onSubmit: ()=>{
-      console.log("hello sing up");
-    }
+      
+      const currentDate = new Date()
+      const picked_Date = new Date(
+        formik.values.bYear,
+        formik.values.bMonth - 1,
+        formik.values.bDay
+      )
+
+      const adult = new Date(1970 + 18, 0, 1);
+      const tooOld = new Date(1970 + 70, 0, 1)
+      if (currentDate - picked_Date < adult) {
+        return setAgeError("underage you are not 18");
+      }else if(currentDate - picked_Date > tooOld){
+        return setAgeError("You are more than 70");
+      }
+      registration()
+      formik.resetForm()
+      setAgeError("")
+      
+
+    },
   })
+
+  const tempYears = new Date().getFullYear();
+  const years = Array.from(new Array(105),(val,index)=> tempYears - index)
+
+  const month = Array.from(new Array(12),(val, index)=> 1 + index)
+
+  const day = () => {
+    return new Date(formik.values.bYear, formik.values.bMonth, 0).getDate();
+  }
+
+  const getDate = Array.from(new Array(day()), (val, index) => 1 + index);
+  // console.log(getDate);
   
-  console.log(new Date().getFullYear());
+
+  // console.log(years);
+  // console.log(month);
+  
+  
+  
+  // console.log(new Date().getDate());
   
 
   const { errors, touched } = formik
   // console.log(formik);
-  console.log(errors);
+  // console.log(errors);
 
   return (
     <div className=' w-full rounded-md shadow-md p-4 lg:px-11 lg:py-7 box-border border border-line_color lg:border-none'>
@@ -52,38 +134,22 @@ const RegistrationFrom = () => {
             errors.password && touched.password && <p className=' font-noto font-normal text-red text-sm my-2'>{errors.password}</p>
           }
           
-          <div className=' flex gap-x-1 lg:gap-x-7'>
-            <select className=' border border-line_color w-[33%] font-noto font-normal p-2' onChange={formik.handleChange} autoComplete='off' onBlur={formik.handleBlur} name='bYear' value={formik.values.bYear}>
-              <option>Year</option>
-              <option>1992</option>
-              <option>1993</option>
-              <option>1994</option>
-            </select>
-            <select className=' border border-line_color w-[33%] font-noto font-normal p-2' onChange={formik.handleChange} autoComplete='off' onBlur={formik.handleBlur} name='bMonth' value={formik.values.bMonth}>
-              <option>Month</option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-            </select>
-            <select className=' border border-line_color w-[33%] font-noto font-normal p-2' onChange={formik.handleChange} autoComplete='off' onBlur={formik.handleBlur} name='bDay' value={formik.values.bDay}>
-              <option>Day</option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-            </select>
-          </div>
-          <div className=' mt-5'>
-            <input type="radio" id='Male' name="gender" onChange={formik.handleChange} autoComplete='off' onBlur={formik.handleBlur} value="male"/>
-            <label htmlFor="Male" className=' font-noto font-normal ml-2' >Male</label>
-            <input type="radio" id='Femal' name="gender" className=' ml-5' onChange={formik.handleChange} autoComplete='off' onBlur={formik.handleBlur} value="femal"/>
-            <label htmlFor="Femal" className=' font-noto font-normal ml-2'>Femal</label>
-          </div>
-          {
-            errors.gender && touched.gender && <p className=' font-noto font-normal text-red text-sm my-2'>{errors.gender}</p>
-          }
+          <DateofBirth 
+          formik={formik} 
+          years={years} 
+          month={month} 
+          getDate={getDate} 
+          ageError={ageError}
+          />
+          <Gender 
+          formik={formik}
+          errors={errors} 
+          touched={touched}
+          />
+          
           <div className=' sm:flex justify-between items-center mt-4'>
             <button type='submit' className='px-6 py-2 bg-secondary_bg rounded-full font-noto font-normal text-white'>Submit</button>
-            <p className=' font-noto font-medium text-base 3xl:text-base xl:text-sm mt-5 sm:mt-0'>Already have an account? <Link to="/" className=' text-primary_color underline'>Sing In</Link></p>
+            <p className=' font-noto font-medium text-base 3xl:text-base xl:text-sm mt-5 sm:mt-0'>Already have an account? <Link to="/login" className=' text-primary_color underline'>Sing In</Link></p>
           </div>
         </form>
       </div>
